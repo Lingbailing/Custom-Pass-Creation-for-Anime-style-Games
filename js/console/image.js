@@ -158,27 +158,26 @@ if (factionUpload) {
     readTemplate(template, 'ctx01');
   });
 }
-// 是否显示明日方舟 Logo
-const logo = document.querySelectorAll("input[name='logoVisible']");
-logo.forEach(radio => {
-  radio.addEventListener("change", () => {
-    // find decorative patterns group and the mrfz_logo child by id to avoid index fragility
+// 是否显示明日方舟 Logo（切换为单 checkbox）
+const logoToggle = document.getElementById('toggleLogo');
+if (logoToggle) {
+  logoToggle.addEventListener('change', () => {
     const deco = template.layers[0].children.find(c => c.id === 'group_decorative_patterns');
     if (deco && deco.children) {
       const mrfz = deco.children.find(ch => ch.id === 'mrfz_logo');
-      if (mrfz) mrfz.visible = radio.value === 't';
+      if (mrfz) mrfz.visible = logoToggle.checked;
     }
-    readTemplate(template, "ctx01");
+    readTemplate(template, 'ctx01');
   });
-});
-// 是否显示切割线
-const cut = document.querySelectorAll("input[name='cutVisible']");
-cut.forEach(radio => {
-  radio.addEventListener("change", () => {
-    template.layers[0].children[0].visible = radio.value === "t";
-    readTemplate(template, "ctx01");
+}
+// 是否显示切割线（切换为单 checkbox）
+const cutToggle = document.getElementById('toggleCut');
+if (cutToggle) {
+  cutToggle.addEventListener('change', () => {
+    template.layers[0].children[0].visible = cutToggle.checked;
+    readTemplate(template, 'ctx01');
   });
-});
+}
 
 // ==== Barcode generation (custom) ====
 const createBarcodeBtn = document.getElementById('createBarcode');
@@ -187,12 +186,20 @@ const barcodeDataInput = document.getElementById('barcodeData');
 const barcodeWidthInput = document.getElementById('barcodeWidth');
 const barcodeHeightInput = document.getElementById('barcodeHeight');
 const barcodeBarWidthInput = document.getElementById('barcodeBarWidth');
+const barcodeBarColorInput = document.getElementById('barcodeBarColor');
+const barcodeTransparentCheckbox = document.getElementById('barcodeTransparent');
 
-function drawBarcodeToDataURL(text, width, height, barWidth) {
+// keep track of whether we've overridden frame images so we can restore
+const originalFrameMap = {};
+
+function drawBarcodeCanvas(text, width, height, barWidth, barColor = '#000000', background = 'transparent') {
   const canvas = document.createElement('canvas');
   // JsBarcode will draw to canvas; set reasonable base dimensions
   canvas.width = Math.max(1, width);
   canvas.height = Math.max(1, height);
+  const ctx = canvas.getContext('2d');
+  // clear background
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   try {
     const JB = window.JsBarcode || JsBarcode;
     JB(canvas, String(text || ''), {
@@ -200,24 +207,71 @@ function drawBarcodeToDataURL(text, width, height, barWidth) {
       width: Math.max(1, barWidth),
       height: Math.max(1, height),
       displayValue: false,
-      margin: 0
+      margin: 0,
+      lineColor: barColor || '#000000',
+      background: background === 'transparent' ? undefined : background
     });
   } catch (err) {
     console.warn('JsBarcode not available or failed, fallback to empty canvas', err);
   }
-  // rotate 90deg clockwise (向下翻转)
+  // rotate 90deg clockwise
   const rotated = document.createElement('canvas');
   rotated.width = canvas.height; // new width = old height
   rotated.height = canvas.width; // new height = old width
   const rctx = rotated.getContext('2d');
-  // fill background
-  rctx.fillStyle = '#ffffff';
-  rctx.fillRect(0,0,rotated.width, rotated.height);
+  rctx.clearRect(0,0,rotated.width, rotated.height);
   // translate to center and rotate 90deg
   rctx.translate(rotated.width / 2, rotated.height / 2);
   rctx.rotate(Math.PI / 2);
   rctx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
-  return rotated.toDataURL('image/png');
+  return rotated;
+}
+
+function canvasToDataURL(canvas) {
+  return canvas.toDataURL('image/png');
+}
+
+function createMaskFromBarcodeCanvas(barcodeCanvas, threshold = 128) {
+  const w = barcodeCanvas.width, h = barcodeCanvas.height;
+  const ctx = barcodeCanvas.getContext('2d');
+  const img = ctx.getImageData(0,0,w,h);
+  const mask = document.createElement('canvas');
+  mask.width = w; mask.height = h;
+  const mctx = mask.getContext('2d');
+  const out = mctx.createImageData(w,h);
+  for (let i=0;i<img.data.length;i+=4) {
+    const r = img.data[i], g = img.data[i+1], b = img.data[i+2], a = img.data[i+3];
+    // brightness
+    const bright = 0.299*r + 0.587*g + 0.114*b;
+    if (a > 0 && bright < threshold) {
+      // bar pixel -> opaque white
+      out.data[i] = 255; out.data[i+1] = 255; out.data[i+2] = 255; out.data[i+3] = 255;
+    } else {
+      // transparent
+      out.data[i] = 0; out.data[i+1] = 0; out.data[i+2] = 0; out.data[i+3] = 0;
+    }
+  }
+  mctx.putImageData(out, 0, 0);
+  return mask;
+}
+
+async function punchHolesInFrame(frameSrc, maskCanvas, x = 0, y = 700) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width; c.height = img.height;
+      const cctx = c.getContext('2d');
+      cctx.drawImage(img, 0, 0);
+      // use mask to clear areas of frame where mask opaque
+      cctx.globalCompositeOperation = 'destination-out';
+      cctx.drawImage(maskCanvas, x, y);
+      cctx.globalCompositeOperation = 'source-over';
+      resolve(c.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(null);
+    img.src = frameSrc;
+  });
 }
 
 function insertBarcodeIntoTemplate(dataUrl, width, height) {
@@ -261,14 +315,59 @@ function insertBarcodeIntoTemplate(dataUrl, width, height) {
   }
 }
 
-createBarcodeBtn && createBarcodeBtn.addEventListener('click', () => {
+createBarcodeBtn && createBarcodeBtn.addEventListener('click', async () => {
   const text = barcodeDataInput.value || '';
   const width = Number(barcodeWidthInput.value) || 590;
   const height = Number(barcodeHeightInput.value) || 80;
   const barWidth = parseFloat(barcodeBarWidthInput.value) || 3.5;
-  const dataUrl = drawBarcodeToDataURL(text, width, height, barWidth);
+  const barColor = (barcodeBarColorInput && barcodeBarColorInput.value) || '#000000';
+  const transparentBars = !!(barcodeTransparentCheckbox && barcodeTransparentCheckbox.checked);
+
+  const rotated = drawBarcodeCanvas(text, width, height, barWidth, barColor, transparentBars ? 'transparent' : '#ffffff');
+  if (transparentBars) {
+    // create mask from barcode (bars opaque)
+    const mask = createMaskFromBarcodeCanvas(rotated);
+    // frame sources in template/back
+    // front frame is inside group_decorative_patterns
+    const decoGroup = template.layers[0].children.find(c=>c.id==='group_decorative_patterns');
+    const frontFrameSrc = decoGroup && decoGroup.children ? decoGroup.children.find(ch=>ch.id==='frame')?.src : null;
+    const backFrameSrc = back.layers.find(l=>l.id==='frame')?.src;
+    // store originals if not stored
+    if (frontFrameSrc && !(frontFrameSrc in originalFrameMap)) originalFrameMap[frontFrameSrc] = null;
+    if (backFrameSrc && !(backFrameSrc in originalFrameMap)) originalFrameMap[backFrameSrc] = null;
+    // punch holes and set runtimeImageMap to modified frames
+    if (frontFrameSrc) {
+      const dataUrlF = await punchHolesInFrame(frontFrameSrc, mask, 0, 700);
+      if (dataUrlF) runtimeImageMap[frontFrameSrc] = dataUrlF;
+    }
+    if (backFrameSrc) {
+      const dataUrlB = await punchHolesInFrame(backFrameSrc, mask, 510, 700);
+      if (dataUrlB) runtimeImageMap[backFrameSrc] = dataUrlB;
+    }
+    // remove any overlay barcode images (we rely on punched frames)
+    const group = template.layers[0].children.find(c => c.id === 'group_decorative_patterns');
+    if (group) {
+      for (let i = group.children.length - 1; i >= 0; i--) {
+        if (group.children[i].id === 'barcode_custom') group.children.splice(i, 1);
+      }
+    }
+    // also remove any back overlay barcode image that might block the punched frame
+    if (back && back.layers) {
+      for (let i = back.layers.length - 1; i >= 0; i--) {
+        if (back.layers[i].id === 'barcode_custom_back') back.layers.splice(i, 1);
+      }
+    }
+    // re-render
+    readTemplate(template, 'ctx01');
+    readTemplate(back, 'ctx02');
+    return;
+  }
+
+  // non-transparent: produce colored barcode and insert as image; also restore any modified frames
+  const dataUrl = canvasToDataURL(rotated);
+  // restore frames if we previously modified them
+  Object.keys(originalFrameMap).forEach(k => { if (runtimeImageMap[k]) delete runtimeImageMap[k]; });
   insertBarcodeIntoTemplate(dataUrl, width, height);
-  // ensure runtime image mapping not needed since src is dataURL
   setTimeout(() => {
     readTemplate(template, 'ctx01');
     readTemplate(back, 'ctx02');
@@ -288,6 +387,15 @@ removeBarcodeBtn && removeBarcodeBtn.addEventListener('click', () => {
       if (back.layers[i].id === 'barcode_custom_back') back.layers.splice(i, 1);
     }
   }
+  // restore frames if modified
+  const decoGroup = template.layers[0].children.find(c=>c.id==='group_decorative_patterns');
+  const frontFrameSrc = decoGroup && decoGroup.children ? decoGroup.children.find(ch=>ch.id==='frame')?.src : null;
+  const backFrameSrc = back.layers.find(l=>l.id==='frame')?.src;
+  if (frontFrameSrc && runtimeImageMap[frontFrameSrc]) delete runtimeImageMap[frontFrameSrc];
+  if (backFrameSrc && runtimeImageMap[backFrameSrc]) delete runtimeImageMap[backFrameSrc];
+  // clear originalFrameMap entries
+  if (frontFrameSrc && (frontFrameSrc in originalFrameMap)) delete originalFrameMap[frontFrameSrc];
+  if (backFrameSrc && (backFrameSrc in originalFrameMap)) delete originalFrameMap[backFrameSrc];
   readTemplate(template, 'ctx01');
   readTemplate(back, 'ctx02');
 });

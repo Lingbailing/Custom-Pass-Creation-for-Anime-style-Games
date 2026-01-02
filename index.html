@@ -16,7 +16,7 @@
 
   <div class="right">
     <h2>通行认证自定义工具  <span style="font-size:0.6em; opacity:0.5; font-weight:normal;">-测试版 V2.1（AI太傻了，调不动了）😫 -</span></h2>
-    <span style="font-size:0.6em; opacity:0.5; font-weight:normal;">建议使用PC浏览器体验完整功能</span>
+    <span style="font-size:0.6em; opacity:0.5; font-weight:normal;">建议使用PC浏览器体验完整功能（请耐心使用，出BUG就多试试。我自己使用也会有BUG，但是重新进入就恢复正常了）</span>
     <div class="container2">
       <div class="">
         <h3>修改后或渲染出现BUG时请刷新</h3>
@@ -64,12 +64,22 @@
         <input id="imageUpload" type="file" accept="image/*" style="display:none;"
                onchange="this.previousElementSibling.querySelector('div').innerText = '已选择: ' + this.files[0].name">
 
-        <label style="display:flex; align-items:center; gap:10px; margin-top:16px;"><input id="advancedToggle" type="checkbox"> 开启文本样式与位置（高级）</label>
+        <label class="checkbox-container" style="display:flex; align-items:center; gap:10px; margin-top:16px;">
+          <input id="advancedToggle" class="custom-checkbox" type="checkbox">
+          <span class="checkmark"></span>
+          <span>开启文本样式与位置（高级）</span>
+        </label>
 
         <div id="advancedPanel" style="display:none;">
           <h3>文本样式与位置（高级）</h3>
           <label for="fieldSelect">选择文本字段</label>
           <select id="fieldSelect"></select>
+
+        <label class="checkbox-container" style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+          <input id="mergeFrontBackToggle" class="custom-checkbox" type="checkbox">
+          <span class="checkmark"></span>
+          <span>合并正/背面选择（启用后同 id 字段同时编辑）</span>
+        </label>
 
         <label for="fieldText">文本内容（实时编辑）</label>
         <input id="fieldText" type="text">
@@ -119,17 +129,69 @@
 
         <h3>视觉样式</h3>
         <label>渐变色开关</label>
-        <div class="radio-group">
-          <label><input type="radio" name="jianBianVisible" value="t" checked> 显示</label>
-          <label><input type="radio" name="jianBianVisible" value="f"> 隐藏</label>
+        <div class="cyber-toggle-wrapper">
+          <input id="toggleJianBian" class="cyber-toggle-checkbox" type="checkbox" checked>
+          <div class="cyber-toggle" aria-hidden="true">
+            <div class="cyber-toggle-track">
+              <div class="cyber-toggle-track-glow"></div>
+              <div class="cyber-toggle-track-dots">
+                <span class="cyber-toggle-track-dot"></span>
+                <span class="cyber-toggle-track-dot"></span>
+                <span class="cyber-toggle-track-dot"></span>
+              </div>
+              <div class="cyber-toggle-thumb">
+                <div class="cyber-toggle-thumb-shadow"></div>
+                <div class="cyber-toggle-thumb-highlight"></div>
+                <div class="cyber-toggle-thumb-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6"></circle></svg>
+                </div>
+              </div>
+              <div class="cyber-toggle-particles">
+                <span class="cyber-toggle-particle"></span>
+                <span class="cyber-toggle-particle"></span>
+                <span class="cyber-toggle-particle"></span>
+                <span class="cyber-toggle-particle"></span>
+              </div>
+            </div>
+          </div>
+          <div class="cyber-toggle-labels">
+            <span class="cyber-toggle-label-off">隐藏</span>
+            <span class="cyber-toggle-label-on">显示</span>
+          </div>
         </div>
         <label for="jian_bian">渐变色选择</label>
         <input id="jian_bian" type="color" value="#00bfff">
 
         <label>挡板开关</label>
-        <div class="radio-group">
-          <label><input type="radio" name="dangBanVisible" value="t" checked> 显示</label>
-          <label><input type="radio" name="dangBanVisible" value="f"> 隐藏</label>
+        <div class="cyber-toggle-wrapper">
+          <input id="toggleDangBan" class="cyber-toggle-checkbox" type="checkbox" checked>
+          <div class="cyber-toggle" aria-hidden="true">
+            <div class="cyber-toggle-track">
+              <div class="cyber-toggle-track-glow"></div>
+              <div class="cyber-toggle-track-dots">
+                <span class="cyber-toggle-track-dot"></span>
+                <span class="cyber-toggle-track-dot"></span>
+                <span class="cyber-toggle-track-dot"></span>
+              </div>
+              <div class="cyber-toggle-thumb">
+                <div class="cyber-toggle-thumb-shadow"></div>
+                <div class="cyber-toggle-thumb-highlight"></div>
+                <div class="cyber-toggle-thumb-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6"></circle></svg>
+                </div>
+              </div>
+              <div class="cyber-toggle-particles">
+                <span class="cyber-toggle-particle"></span>
+                <span class="cyber-toggle-particle"></span>
+                <span class="cyber-toggle-particle"></span>
+                <span class="cyber-toggle-particle"></span>
+              </div>
+            </div>
+          </div>
+          <div class="cyber-toggle-labels">
+            <span class="cyber-toggle-label-off">隐藏</span>
+            <span class="cyber-toggle-label-on">显示</span>
+          </div>
         </div>
         <label for="dang_ban">精一挡板颜色</label>
         <input id="dang_ban" type="color" value="#8a60ab">
@@ -138,15 +200,67 @@
         <input id="bei_ying" type="color" value="#fff1b9">
 
         <label>Logo 开关</label>
-        <div class="radio-group">
-          <label><input type="radio" name="logoVisible" value="t" checked> 显示</label>
-          <label><input type="radio" name="logoVisible" value="f"> 隐藏</label>
+        <div class="cyber-toggle-wrapper">
+          <input id="toggleLogo" class="cyber-toggle-checkbox" type="checkbox" checked>
+          <div class="cyber-toggle" aria-hidden="true">
+            <div class="cyber-toggle-track">
+              <div class="cyber-toggle-track-glow"></div>
+              <div class="cyber-toggle-track-dots">
+                <span class="cyber-toggle-track-dot"></span>
+                <span class="cyber-toggle-track-dot"></span>
+                <span class="cyber-toggle-track-dot"></span>
+              </div>
+              <div class="cyber-toggle-thumb">
+                <div class="cyber-toggle-thumb-shadow"></div>
+                <div class="cyber-toggle-thumb-highlight"></div>
+                <div class="cyber-toggle-thumb-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6"></circle></svg>
+                </div>
+              </div>
+              <div class="cyber-toggle-particles">
+                <span class="cyber-toggle-particle"></span>
+                <span class="cyber-toggle-particle"></span>
+                <span class="cyber-toggle-particle"></span>
+                <span class="cyber-toggle-particle"></span>
+              </div>
+            </div>
+          </div>
+          <div class="cyber-toggle-labels">
+            <span class="cyber-toggle-label-off">隐藏</span>
+            <span class="cyber-toggle-label-on">显示</span>
+          </div>
         </div>
 
         <label>切割线开关</label>
-        <div class="radio-group">
-          <label><input type="radio" name="cutVisible" value="t" checked> 显示</label>
-          <label><input type="radio" name="cutVisible" value="f"> 隐藏</label>
+        <div class="cyber-toggle-wrapper">
+          <input id="toggleCut" class="cyber-toggle-checkbox" type="checkbox" checked>
+          <div class="cyber-toggle" aria-hidden="true">
+            <div class="cyber-toggle-track">
+              <div class="cyber-toggle-track-glow"></div>
+              <div class="cyber-toggle-track-dots">
+                <span class="cyber-toggle-track-dot"></span>
+                <span class="cyber-toggle-track-dot"></span>
+                <span class="cyber-toggle-track-dot"></span>
+              </div>
+              <div class="cyber-toggle-thumb">
+                <div class="cyber-toggle-thumb-shadow"></div>
+                <div class="cyber-toggle-thumb-highlight"></div>
+                <div class="cyber-toggle-thumb-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6"></circle></svg>
+                </div>
+              </div>
+              <div class="cyber-toggle-particles">
+                <span class="cyber-toggle-particle"></span>
+                <span class="cyber-toggle-particle"></span>
+                <span class="cyber-toggle-particle"></span>
+                <span class="cyber-toggle-particle"></span>
+              </div>
+            </div>
+          </div>
+          <div class="cyber-toggle-labels">
+            <span class="cyber-toggle-label-off">隐藏</span>
+            <span class="cyber-toggle-label-on">显示</span>
+          </div>
         </div>
         
         <h3>条形码（自定义）</h3>
@@ -161,14 +275,30 @@
         </div>
         <label for="barcodeBarWidth">条宽 (px)</label>
         <input id="barcodeBarWidth" type="number" value="3.5" step="0.1">
+        <label for="barcodeBarColor">条颜色</label>
+        <input id="barcodeBarColor" type="color" value="#000000">
+        <label style="display:flex;align-items:center;gap:8px;"><input id="barcodeTransparent" type="checkbox"> 透明条形码（使 frame 区域穿透）</label>
         <button id="createBarcode">生成条形码</button>
         <button id="removeBarcode">移除条形码</button>
         </div>
 
         <h3>导出</h3>
         <div class="export-group">
-          <button id="exportPNG1">↓ 导出正面 .PNG</button>
-          <button id="exportPNG2">↓ 导出背面 .PNG</button>
+          <div class="export-row">
+            <button id="exportPNG1">↓ 导出正面 .PNG</button>
+            <button id="exportPNG2">↓ 导出背面 .PNG</button>
+          </div>
+          <div class="export-row">
+            <button id="exportBothPNG">↓ 导出双面（并排）.PNG</button>
+            <button id="exportBothZip">↓ 导出双面.zip</button>
+          </div>
+          <div class="export-row">
+            <button id="exportShare">↓ 导出分享文件 (.json)</button>
+            <label class="import-label">
+              <input id="importShare" type="file" accept="application/json">
+              <span>加载分享文件</span>
+            </label>
+          </div>
         </div>
 
         <button id="lianXi" style="margin-top:20px">✉ 联系作者</button>
@@ -179,6 +309,8 @@
 </div>
 <!-- JsBarcode for standard barcode generation -->
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<!-- JSZip for packaging exports (zip) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="main.js" type="module"></script>
 </body>
 </html>

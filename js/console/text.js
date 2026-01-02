@@ -17,6 +17,7 @@ const xzb2 = document.getElementById("xzb2");
 const xzb3 = document.getElementById("xzb3");
 const xzb4 = document.getElementById("xzb4");
 const fieldSelect = document.getElementById("fieldSelect");
+const mergeToggle = document.getElementById('mergeFrontBackToggle');
 const posLeft = document.getElementById("posLeft");
 const posTop = document.getElementById("posTop");
 const posRotate = document.getElementById("posRotate");
@@ -54,6 +55,14 @@ registerBasicInputForId('©HYPERGRYPH', [null], [xzb3]);
 
 function lockNodeId(nodeKey) {
   if (!nodeKey) return;
+  // support merged key like 'merged::id' by locking both template::id and back::id
+  if (String(nodeKey).startsWith('merged::')) {
+    const id = String(nodeKey).split('::')[1];
+    lockNodeId(`template::${id}`);
+    lockNodeId(`back::${id}`);
+    advancedLockedFields.add(nodeKey);
+    return;
+  }
   if (advancedLockedFields.has(nodeKey)) return;
   advancedLockedFields.add(nodeKey);
   const inputs = basicInputsByNodeId[nodeKey] || [];
@@ -159,46 +168,103 @@ const fieldFriendlyNames = {
   'RHODES ISLAND INC.': '主标题（侧列）'
 };
 
-function findNodeById(compositeKey) {
-  // compositeKey expected as 'owner::id' (owner = 'template' or 'back')
-  if (!compositeKey) return null;
+// return array of matching text node entries for a given compositeKey
+function findNodesByCompositeKey(compositeKey) {
+  if (!compositeKey) return [];
   const parts = String(compositeKey).split('::');
+  // merged::id -> return both owners if present
+  if (parts[0] === 'merged' && parts[1]) {
+    const id = parts[1];
+    const result = [];
+    const tList = collectTextNodes(template.layers, [], 'template');
+    const bList = collectTextNodes(back.layers, [], 'back');
+    const t = tList.find(item => item.id === id);
+    const b = bList.find(item => item.id === id);
+    if (t) result.push(t);
+    if (b) result.push(b);
+    return result;
+  }
   if (parts.length === 2) {
     const owner = parts[0];
     const id = parts[1];
     if (owner === 'back') {
       const list = collectTextNodes(back.layers, [], 'back');
       const found = list.find(item => item.id === id);
-      return found || null;
-    } else {
+      return found ? [found] : [];
+    } else if (owner === 'template') {
       const list = collectTextNodes(template.layers, [], 'template');
       const found = list.find(item => item.id === id);
-      return found || null;
+      return found ? [found] : [];
     }
   }
-  // fallback: search both
-  const t = collectTextNodes(template.layers);
+  // fallback: try match id across both
+  const t = collectTextNodes(template.layers, [], 'template');
   const b = collectTextNodes(back.layers, [], 'back');
   const all = t.concat(b);
-  return all.find(item => item.id === compositeKey) || null;
+  return all.filter(item => item.id === String(compositeKey));
+}
+
+// compatibility: single-entry finder (returns first match)
+function findNodeById(compositeKey) {
+  const arr = findNodesByCompositeKey(compositeKey);
+  return arr && arr.length ? arr[0] : null;
 }
 
 // populate field select with available text nodes
 function populateFieldSelect() {
-  const nodes = collectTextNodes(template.layers).concat(collectTextNodes(back.layers, [], 'back'));
   fieldSelect.innerHTML = '';
-  nodes.forEach(n => {
-    const opt = document.createElement('option');
-    const owner = n.owner === 'back' ? 'back' : 'template';
-    const key = `${owner}::${n.id}`;
-    opt.value = key;
-    const displayName = n.node.name || n.id || n.node.id || '(unnamed)';
-    const preview = n.node.text ? String(n.node.text).slice(0, 30) : '';
-    const friendly = fieldFriendlyNames[n.id] || fieldFriendlyNames[n.node.id] || displayName;
-    const ownerLabel = owner === 'back' ? '背面' : '正面';
-    opt.textContent = `${ownerLabel} · ${friendly}` + (preview ? ' — ' + preview : '');
-    fieldSelect.appendChild(opt);
-  });
+  const merge = mergeToggle && mergeToggle.checked;
+  const tList = collectTextNodes(template.layers, [], 'template');
+  const bList = collectTextNodes(back.layers, [], 'back');
+  if (merge) {
+    // build map of id -> {t?, b?}
+    const map = new Map();
+    tList.forEach(n => map.set(n.id, Object.assign(map.get(n.id) || {}, {t: n})));
+    bList.forEach(n => map.set(n.id, Object.assign(map.get(n.id) || {}, {b: n})));
+    for (const [id, pair] of map.entries()) {
+      if (!id) continue;
+      if (pair.t && pair.b) {
+        const opt = document.createElement('option');
+        opt.value = `merged::${id}`;
+        const displayName = pair.t.node.name || id || '(unnamed)';
+        const friendly = fieldFriendlyNames[id] || displayName;
+        const previewT = pair.t.node.text ? String(pair.t.node.text).slice(0,30) : '';
+        const previewB = pair.b.node.text ? String(pair.b.node.text).slice(0,30) : '';
+        opt.textContent = `正/背 · ${friendly}` + ((previewT||previewB) ? ' — ' + (previewT || previewB) : '');
+        fieldSelect.appendChild(opt);
+      } else if (pair.t) {
+        const n = pair.t;
+        const opt = document.createElement('option');
+        opt.value = `template::${n.id}`;
+        const displayName = n.node.name || n.id || '(unnamed)';
+        const friendly = fieldFriendlyNames[n.id] || displayName;
+        opt.textContent = `正面 · ${friendly}` + (n.node.text ? ' — ' + String(n.node.text).slice(0,30) : '');
+        fieldSelect.appendChild(opt);
+      } else if (pair.b) {
+        const n = pair.b;
+        const opt = document.createElement('option');
+        opt.value = `back::${n.id}`;
+        const displayName = n.node.name || n.id || '(unnamed)';
+        const friendly = fieldFriendlyNames[n.id] || displayName;
+        opt.textContent = `背面 · ${friendly}` + (n.node.text ? ' — ' + String(n.node.text).slice(0,30) : '');
+        fieldSelect.appendChild(opt);
+      }
+    }
+  } else {
+    const nodes = tList.concat(bList);
+    nodes.forEach(n => {
+      const opt = document.createElement('option');
+      const owner = n.owner === 'back' ? 'back' : 'template';
+      const key = `${owner}::${n.id}`;
+      opt.value = key;
+      const displayName = n.node.name || n.id || n.node.id || '(unnamed)';
+      const preview = n.node.text ? String(n.node.text).slice(0, 30) : '';
+      const friendly = fieldFriendlyNames[n.id] || fieldFriendlyNames[n.node.id] || displayName;
+      const ownerLabel = owner === 'back' ? '背面' : '正面';
+      opt.textContent = `${ownerLabel} · ${friendly}` + (preview ? ' — ' + preview : '');
+      fieldSelect.appendChild(opt);
+    });
+  }
 }
 
 // populate font select from fontList
@@ -232,9 +298,10 @@ function populateFontStyleSelect(family) {
 
 // when field changes, show current values
 fieldSelect.addEventListener('change', () => {
-  const entry = findNodeById(fieldSelect.value);
-  if (!entry) return;
-  const node = entry.node;
+  const entries = findNodesByCompositeKey(fieldSelect.value);
+  if (!entries || !entries.length) return;
+  const primary = entries.find(e => e.owner === 'template') || entries[0];
+  const node = primary.node;
   posLeft.value = (node.layout && typeof node.layout.left !== 'undefined') ? node.layout.left : '';
   posTop.value = (node.layout && typeof node.layout.top !== 'undefined') ? node.layout.top : '';
   posRotate.value = (node.layout && typeof node.layout.rotate !== 'undefined') ? node.layout.rotate : 0;
@@ -251,13 +318,12 @@ fieldSelect.addEventListener('change', () => {
 
 // realtime update of selected node text
 fieldText.addEventListener('input', () => {
-  const id = fieldSelect.value;
-  const entry = findNodeById(id);
-  if (!entry) return;
-  const node = entry.node;
-  node.text = fieldText.value;
-  // lock this node from basic edits
-  lockNodeId(id);
+  const key = fieldSelect.value;
+  const entries = findNodesByCompositeKey(key);
+  if (!entries || !entries.length) return;
+  entries.forEach(en => { en.node.text = fieldText.value; });
+  // lock this node(s) from basic edits
+  lockNodeId(key);
   try {
     readTemplate(template, 'ctx01');
     readTemplate(back, 'ctx02');
@@ -346,35 +412,38 @@ const debouncedRender = (function() {
 
 applyStyle.addEventListener('click', async () => {
   const id = fieldSelect.value;
-  const entry = findNodeById(id);
-  if (!entry) return alert('未找到对应文本节点');
-  const node = entry.node;
-  node.layout = node.layout || {};
-  if (posLeft.value !== '') node.layout.left = Number(posLeft.value);
-  if (posTop.value !== '') node.layout.top = Number(posTop.value);
-  if (posRotate.value !== '') node.layout.rotate = Number(posRotate.value);
-  node.font = node.font || {};
-  if (fontSelect.value) node.font.family = fontSelect.value;
-  if (fontStyleSelect.value) node.font.style = fontStyleSelect.value;
-  if (fontSizeInput.value !== '') node.font.size = Number(fontSizeInput.value);
-  if (fontColorInput.value) node.font.color = fontColorInput.value;
-  if (fontTrackingInput.value !== '') node.font.tracking = Number(fontTrackingInput.value);
+  const entries = findNodesByCompositeKey(id);
+  if (!entries || !entries.length) return alert('未找到对应文本节点');
+  const family = fontSelect.value || '';
+  const style = fontStyleSelect.value || 'Regular';
+  entries.forEach(en => {
+    const node = en.node;
+    node.layout = node.layout || {};
+    if (posLeft.value !== '') node.layout.left = Number(posLeft.value);
+    if (posTop.value !== '') node.layout.top = Number(posTop.value);
+    if (posRotate.value !== '') node.layout.rotate = Number(posRotate.value);
+    node.font = node.font || {};
+    if (family) node.font.family = family;
+    if (style) node.font.style = style;
+    if (fontSizeInput.value !== '') node.font.size = Number(fontSizeInput.value);
+    if (fontColorInput.value) node.font.color = fontColorInput.value;
+    if (fontTrackingInput.value !== '') node.font.tracking = Number(fontTrackingInput.value);
+  });
   // ensure the font is loaded before render
   try {
-    await ensureFontLoaded(node.font.family, node.font.style);
+    await ensureFontLoaded(family, style);
   } catch (e) {}
-  // lock this node from basic edits
+  // lock these node(s) from basic edits
   lockNodeId(id);
   debouncedRender(100);
 });
 
 // realtime inputs: debounce updates to avoid high freq render
 fieldText.addEventListener('input', () => {
-  const id = fieldSelect.value;
-  const entry = findNodeById(id);
-  if (!entry) return;
-  const node = entry.node;
-  node.text = fieldText.value;
+  const key = fieldSelect.value;
+  const entries = findNodesByCompositeKey(key);
+  if (!entries || !entries.length) return;
+  entries.forEach(en => en.node.text = fieldText.value);
   debouncedRender(150);
 });
 
@@ -382,20 +451,22 @@ fieldText.addEventListener('input', () => {
   if (!el) return;
   el.addEventListener('input', () => {
     const id = fieldSelect.value;
-    const entry = findNodeById(id);
-    if (!entry) return;
-    const node = entry.node;
-    node.layout = node.layout || {};
-    if (posLeft.value !== '') node.layout.left = Number(posLeft.value);
-    if (posTop.value !== '') node.layout.top = Number(posTop.value);
-    if (posRotate.value !== '') node.layout.rotate = Number(posRotate.value);
-    node.font = node.font || {};
-    if (fontSelect.value) node.font.family = fontSelect.value;
-    if (fontStyleSelect.value) node.font.style = fontStyleSelect.value;
-    if (fontSizeInput.value !== '') node.font.size = Number(fontSizeInput.value);
-    if (fontColorInput.value) node.font.color = fontColorInput.value;
-    if (fontTrackingInput.value !== '') node.font.tracking = Number(fontTrackingInput.value);
-    // lock this node from basic edits
+    const entries = findNodesByCompositeKey(id);
+    if (!entries || !entries.length) return;
+    entries.forEach(en => {
+      const node = en.node;
+      node.layout = node.layout || {};
+      if (posLeft.value !== '') node.layout.left = Number(posLeft.value);
+      if (posTop.value !== '') node.layout.top = Number(posTop.value);
+      if (posRotate.value !== '') node.layout.rotate = Number(posRotate.value);
+      node.font = node.font || {};
+      if (fontSelect.value) node.font.family = fontSelect.value;
+      if (fontStyleSelect.value) node.font.style = fontStyleSelect.value;
+      if (fontSizeInput.value !== '') node.font.size = Number(fontSizeInput.value);
+      if (fontColorInput.value) node.font.color = fontColorInput.value;
+      if (fontTrackingInput.value !== '') node.font.tracking = Number(fontTrackingInput.value);
+    });
+    // lock this node(s) from basic edits
     lockNodeId(id);
     debouncedRender(200);
   });
@@ -414,3 +485,14 @@ advancedToggle.addEventListener('change', () => {
     advancedPanel.style.display = 'none';
   }
 });
+
+// when merge toggle changes, refresh field list if advanced panel is open
+if (mergeToggle) {
+  mergeToggle.addEventListener('change', () => {
+    if (advancedToggle.checked) {
+      populateFieldSelect();
+      if (fieldSelect.options.length) fieldSelect.selectedIndex = 0;
+      fieldSelect.dispatchEvent(new Event('change'));
+    }
+  });
+}
