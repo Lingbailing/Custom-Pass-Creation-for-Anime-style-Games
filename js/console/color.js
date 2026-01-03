@@ -15,6 +15,10 @@ import { readTemplate } from "../parser/main.js";
  */
 const jianBianToggle = document.getElementById('toggleJianBian');
 if (jianBianToggle) {
+  // 初始化状态
+  const jianBianLayer = template.layers[0].children[3].children[2];
+  if (jianBianLayer) jianBianToggle.checked = jianBianLayer.visible;
+
   jianBianToggle.addEventListener('change', () => {
     template.layers[0].children[3].children[2].visible = jianBianToggle.checked;
     readTemplate(template, 'ctx01');
@@ -36,6 +40,10 @@ jianBian.addEventListener("input", (e) => {
  */
 const dangBanToggle = document.getElementById('toggleDangBan');
 if (dangBanToggle) {
+  // 初始化状态
+  const dangBanLayer = template.layers[1].children[1];
+  if (dangBanLayer) dangBanToggle.checked = dangBanLayer.visible;
+
   dangBanToggle.addEventListener('change', () => {
     template.layers[1].children[1].visible = dangBanToggle.checked;
     back.layers[2].visible = dangBanToggle.checked;

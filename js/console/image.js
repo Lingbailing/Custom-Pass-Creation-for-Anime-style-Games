@@ -161,6 +161,13 @@ if (factionUpload) {
 // 是否显示明日方舟 Logo（切换为单 checkbox）
 const logoToggle = document.getElementById('toggleLogo');
 if (logoToggle) {
+  // 初始化状态
+  const deco = template.layers[0].children.find(c => c.id === 'group_decorative_patterns');
+  if (deco && deco.children) {
+    const mrfz = deco.children.find(ch => ch.id === 'mrfz_logo');
+    if (mrfz) logoToggle.checked = mrfz.visible;
+  }
+  
   logoToggle.addEventListener('change', () => {
     const deco = template.layers[0].children.find(c => c.id === 'group_decorative_patterns');
     if (deco && deco.children) {
@@ -170,9 +177,32 @@ if (logoToggle) {
     readTemplate(template, 'ctx01');
   });
 }
+
+// 处理 Logo 上传
+const logoUpload = document.getElementById('logoUpload');
+if (logoUpload) {
+  logoUpload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    // 替换默认的 logo 图片路径映射
+    replaceImage("assets/layers/front/mrfz logo.png", url);
+    // 确保 logo 可见
+    if (logoToggle && !logoToggle.checked) {
+      logoToggle.checked = true;
+      // 触发 change 事件以更新模板状态
+      logoToggle.dispatchEvent(new Event('change'));
+    }
+  });
+}
+
 // 是否显示切割线（切换为单 checkbox）
 const cutToggle = document.getElementById('toggleCut');
 if (cutToggle) {
+  // 初始化状态
+  const cuttingLine = template.layers[0].children[0]; // id: cutting_line
+  if (cuttingLine) cutToggle.checked = cuttingLine.visible;
+
   cutToggle.addEventListener('change', () => {
     template.layers[0].children[0].visible = cutToggle.checked;
     readTemplate(template, 'ctx01');
