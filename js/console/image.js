@@ -215,6 +215,8 @@ const removeBarcodeBtn = document.getElementById('removeBarcode');
 const barcodeDataInput = document.getElementById('barcodeData');
 const barcodeWidthInput = document.getElementById('barcodeWidth');
 const barcodeHeightInput = document.getElementById('barcodeHeight');
+const barcodePosXInput = document.getElementById('barcodePosX');
+const barcodePosYInput = document.getElementById('barcodePosY');
 const barcodeBarWidthInput = document.getElementById('barcodeBarWidth');
 const barcodeBarColorInput = document.getElementById('barcodeBarColor');
 const barcodeTransparentCheckbox = document.getElementById('barcodeTransparent');
@@ -304,7 +306,7 @@ async function punchHolesInFrame(frameSrc, maskCanvas, x = 0, y = 700) {
   });
 }
 
-function insertBarcodeIntoTemplate(dataUrl, width, height) {
+function insertBarcodeIntoTemplate(dataUrl, width, height, x, y) {
   // find decorative patterns group under front
   const group = template.layers[0].children.find(c => c.id === 'group_decorative_patterns');
   if (!group) {
@@ -323,10 +325,10 @@ function insertBarcodeIntoTemplate(dataUrl, width, height) {
     opacity: 100,
     name: '自定义条形码',
     src: dataUrl,
-    layout: { left: 0, top: 700 }
+    layout: { left: x, top: y }
   });
 
-  // also insert barcode into back at x=500,y=700 (ensure removed first)
+  // also insert barcode into back at symmetric position (ensure removed first)
   if (back && back.layers) {
     // remove existing back barcode if any
     for (let i = back.layers.length - 1; i >= 0; i--) {
@@ -340,7 +342,7 @@ function insertBarcodeIntoTemplate(dataUrl, width, height) {
       opacity: 100,
       name: '自定义条形码(背面)',
       src: dataUrl,
-      layout: { left: 510, top: 700 }
+      layout: { left: 590 - height - x, top: y }
     });
   }
 }
@@ -349,6 +351,8 @@ createBarcodeBtn && createBarcodeBtn.addEventListener('click', async () => {
   const text = barcodeDataInput.value || '';
   const width = Number(barcodeWidthInput.value) || 590;
   const height = Number(barcodeHeightInput.value) || 80;
+  const posX = Number(barcodePosXInput.value) || 0;
+  const posY = Number(barcodePosYInput.value) || 700;
   const barWidth = parseFloat(barcodeBarWidthInput.value) || 3.5;
   const barColor = (barcodeBarColorInput && barcodeBarColorInput.value) || '#000000';
   const transparentBars = !!(barcodeTransparentCheckbox && barcodeTransparentCheckbox.checked);
@@ -367,11 +371,11 @@ createBarcodeBtn && createBarcodeBtn.addEventListener('click', async () => {
     if (backFrameSrc && !(backFrameSrc in originalFrameMap)) originalFrameMap[backFrameSrc] = null;
     // punch holes and set runtimeImageMap to modified frames
     if (frontFrameSrc) {
-      const dataUrlF = await punchHolesInFrame(frontFrameSrc, mask, 0, 700);
+      const dataUrlF = await punchHolesInFrame(frontFrameSrc, mask, posX, posY);
       if (dataUrlF) runtimeImageMap[frontFrameSrc] = dataUrlF;
     }
     if (backFrameSrc) {
-      const dataUrlB = await punchHolesInFrame(backFrameSrc, mask, 510, 700);
+      const dataUrlB = await punchHolesInFrame(backFrameSrc, mask, 590 - height - posX, posY);
       if (dataUrlB) runtimeImageMap[backFrameSrc] = dataUrlB;
     }
     // remove any overlay barcode images (we rely on punched frames)
@@ -397,7 +401,7 @@ createBarcodeBtn && createBarcodeBtn.addEventListener('click', async () => {
   const dataUrl = canvasToDataURL(rotated);
   // restore frames if we previously modified them
   Object.keys(originalFrameMap).forEach(k => { if (runtimeImageMap[k]) delete runtimeImageMap[k]; });
-  insertBarcodeIntoTemplate(dataUrl, width, height);
+  insertBarcodeIntoTemplate(dataUrl, width, height, posX, posY);
   setTimeout(() => {
     readTemplate(template, 'ctx01');
     readTemplate(back, 'ctx02');

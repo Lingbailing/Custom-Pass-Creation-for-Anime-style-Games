@@ -15,7 +15,7 @@
   </div>
 
   <div class="right">
-    <h2>通行认证自定义工具  <span style="font-size:0.6em; opacity:0.5; font-weight:normal;">-测试版 V2.4.5（AI太傻了，调不动了）😫 -</span></h2>
+    <h2>通行认证自定义工具  <span style="font-size:0.6em; opacity:0.5; font-weight:normal;">-测试版 V2.5.5（AI太傻了，调不动了）😫 -</span></h2>
     <span style="font-size:0.6em; opacity:0.5; font-weight:normal;">建议使用PC浏览器体验完整功能（请耐心使用，出BUG就多试试。我自己使用也会有BUG，但是重新进入就恢复正常了）</span>
     <div class="container2">
       <div class="">
@@ -275,7 +275,11 @@
           <input id="barcodeWidth" type="number" value="700">
           <label for="barcodeHeight">高度（条形码像素高度）</label>
           <input id="barcodeHeight" type="number" value="80">
-          <div class="help-text">说明：位置固定，X=0，Y=700；宽度/高度为生成的条形码像素尺寸（非位置）。</div>
+          <label for="barcodePosX">正面位置 X</label>
+          <input id="barcodePosX" type="number" value="0">
+          <label for="barcodePosY">正面位置 Y</label>
+          <input id="barcodePosY" type="number" value="700">
+          <div class="help-text">说明：宽度/高度为生成的条形码像素尺寸。位置 X/Y 为条形码在正面画布上的位置（背面会同步偏移）。</div>
         </div>
         <label for="barcodeBarWidth">条宽 (px)</label>
         <input id="barcodeBarWidth" type="number" value="3.5" step="0.1">
