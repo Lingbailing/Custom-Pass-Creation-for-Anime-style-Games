@@ -262,66 +262,152 @@ canvas {
 
 
 .right {
-    width: 720px;
-    min-width: 350px;
-    background-color: var(--panel-bg);
-    padding: 30px;
+    width: 580px;
+    min-width: 400px;
+    padding: 30px 90px 30px 30px; /* 为侧边导航留出空间并增加呼吸感 */
     overflow-y: auto;
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
-    border-left: 1px solid var(--border-color);
-    padding-bottom: 50px; /* 底部留白 */
+    padding-bottom: 120px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-color) transparent;
+    position: relative;
+    scroll-behavior: smooth;
+    background: linear-gradient(to right, rgba(18,18,18,0.8), rgba(18,18,18,0));
 }
 
+/* 侧边导航栏样式 */
+.side-nav {
+    position: fixed;
+    right: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 1000;
+    background: rgba(25, 25, 25, 0.9);
+    padding: 18px 12px;
+    border-radius: 24px; /* 更圆润的方圆 */
+    border: 1px solid rgba(255,255,255,0.05);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.side-nav a {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #2a2a2a;
+    border-radius: 14px; /* 典型的方圆 Squircle 比例 */
+    text-decoration: none;
+    font-size: 1.3rem;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-main);
+}
+
+.side-nav a:hover {
+    background: var(--accent-color);
+    transform: scale(1.1);
+    border-color: #fff;
+}
+
+.side-nav a::after {
+    content: attr(title);
+    position: absolute;
+    right: 55px;
+    background: var(--accent-color);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.side-nav a:hover::after {
+    opacity: 1;
+}
 
 .right::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
 }
 
 .right::-webkit-scrollbar-track {
-    background: var(--panel-bg);
+    background: transparent;
 }
 
 .right::-webkit-scrollbar-thumb {
-    background: #444;
-    border-radius: 3px;
+    background: var(--accent-color);
+    border-radius: 10px;
 }
 
-
 h2 {
-    font-size: 1.2rem;
-    margin-bottom: 20px;
+    font-size: 1.25rem;
+    margin: 0 0 15px 0;
     padding-bottom: 10px;
     border-bottom: 2px solid var(--accent-color);
     letter-spacing: 1px;
+    color: #fff;
 }
 
 h3 {
-    font-size: 0.95rem;
+    font-size: 1rem;
     color: var(--accent-color);
-    margin-top: 30px;
-    margin-bottom: 15px;
+    margin-top: 0;
+    margin-bottom: 20px;
     text-transform: uppercase;
-    border-left: 3px solid var(--accent-color);
-    padding-left: 8px;
+    border-left: 4px solid var(--accent-color);
+    padding-left: 12px;
+    letter-spacing: 1px;
 }
-
 
 .container2 {
     display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
+    flex-direction: column;
+    gap: 25px;
 }
 
-
-.container2 > div {
-    flex: 1;
-    min-width: 100%;
+.editor-group {
+    background: #1e1e1e;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 28px; /* 增加圆角实现深度方圆风格 */
+    padding: 30px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 10px;
 }
 
-@media (min-width: 1400px) {
-    .container2 > div {
-        min-width: 45%;
-    }
+.editor-group:hover {
+    border-color: rgba(35, 173, 229, 0.5);
+    transform: translateY(-5px) scale(1.01); /* 向上浮动且微增 */
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    background: #252525;
+}
+
+.editor-group::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.editor-group:hover::before {
+    opacity: 1;
+}
+
+.editor-group h3 {
+    margin-top: 0;
 }
 
 label {
@@ -490,7 +576,7 @@ button {
     padding: 14px;
     margin-top: 12px;
     border: none;
-    border-radius: 4px;
+    border-radius: 1rem; /* 统一为方圆风格 */
     font-weight: 600;
     cursor: pointer;
     font-size: 0.95rem;
@@ -498,6 +584,16 @@ button {
     letter-spacing: 0.5px;
     position: relative;
     overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(0);
 }
 
 #shuaXin {
@@ -505,34 +601,48 @@ button {
     color: #fff;
 }
 
-#shuaXin:active {
-    background-color: #1a96c7;
-    transform: scale(0.98);
+#fixedRefresh {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    width: 60px;
+    height: 60px;
+    padding: 0;
+    margin: 0;
+    border-radius: 15px; /* 方圆正方形 */
+    background-color: var(--accent-color);
+    color: white;
+    font-size: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+    animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+    0% { box-shadow: 0 0 0 0 rgba(35, 173, 229, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(35, 173, 229, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(35, 173, 229, 0); }
 }
 
 #chongZhi {
-    background: transparent;
+    background: rgba(229, 77, 66, 0.1);
     border: 1px solid var(--danger-color);
     color: var(--danger-color);
 }
 
-#chongZhi:active {
-    background: rgba(229, 77, 66, 0.1);
-}
-
-#exportPNG1, #exportPNG2 {
-    background-color: #eee;
-    color: #111;
-    margin-bottom: 8px;
-}
-
-#exportPNG1:active, #exportPNG2:active {
-    background-color: #ccc;
-}
-
-#lianXi, #github {
+#exportPNG1, #exportPNG2, #exportBothPNG, #exportBothZip, #exportShare, #applyStyle, #createBarcode, #lianXi, #github {
     background-color: #333;
-    color: #aaa;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+
+#exportBothPNG, #applyStyle, #createBarcode {
+    background-color: var(--accent-color);
+    color: #fff;
+    border: none;
 }
 
 @media (max-width: 900px) {

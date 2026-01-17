@@ -21,7 +21,6 @@ if (jianBianToggle) {
 
   jianBianToggle.addEventListener('change', () => {
     template.layers[0].children[3].children[2].visible = jianBianToggle.checked;
-    readTemplate(template, 'ctx01');
   });
 }
 
@@ -47,8 +46,6 @@ if (dangBanToggle) {
   dangBanToggle.addEventListener('change', () => {
     template.layers[1].children[1].visible = dangBanToggle.checked;
     back.layers[2].visible = dangBanToggle.checked;
-    readTemplate(template, 'ctx01');
-    readTemplate(back, 'ctx02');
   });
 }
 
@@ -90,7 +87,5 @@ if (beiYing) {
   beiYing.addEventListener("input", (e) => {
     const target = findLayerById(back.layers, 'tu_pian_back') || findLayerById(back.layers, 'tu_pian');
     if (target) target.color = e.target.value;
-    // 立即重绘背面
-    readTemplate(back, "ctx02");
   });
 }

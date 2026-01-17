@@ -390,26 +390,6 @@ async function ensureFontLoaded(family, style = 'Regular') {
 }
 
 // apply style (position + font)
-function renderNow() {
-  try {
-    readTemplate(template, 'ctx01');
-    readTemplate(back, 'ctx02');
-  } catch (err) {
-    // ignore
-  }
-}
-
-const debouncedRender = (function() {
-  let tid = null;
-  return function(wait = 250) {
-    if (tid) clearTimeout(tid);
-    tid = setTimeout(() => {
-      renderNow();
-      tid = null;
-    }, wait);
-  };
-})();
-
 applyStyle.addEventListener('click', async () => {
   const id = fieldSelect.value;
   const entries = findNodesByCompositeKey(id);
@@ -435,16 +415,14 @@ applyStyle.addEventListener('click', async () => {
   } catch (e) {}
   // lock these node(s) from basic edits
   lockNodeId(id);
-  debouncedRender(100);
 });
 
-// realtime inputs: debounce updates to avoid high freq render
+// realtime inputs: updates data but no automatic render
 fieldText.addEventListener('input', () => {
   const key = fieldSelect.value;
   const entries = findNodesByCompositeKey(key);
   if (!entries || !entries.length) return;
   entries.forEach(en => en.node.text = fieldText.value);
-  debouncedRender(150);
 });
 
 [posLeft, posTop, posRotate, fontSelect, fontStyleSelect, fontSizeInput, fontColorInput, fontTrackingInput].forEach(el => {
@@ -468,7 +446,6 @@ fieldText.addEventListener('input', () => {
     });
     // lock this node(s) from basic edits
     lockNodeId(id);
-    debouncedRender(200);
   });
 });
 

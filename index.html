@@ -15,13 +15,48 @@
   </div>
 
   <div class="right">
-    <h2>通行认证自定义工具  <span style="font-size:0.6em; opacity:0.5; font-weight:normal;">-测试版 V2.5.5（AI太傻了，调不动了）😫 -</span></h2>
-    <span style="font-size:0.6em; opacity:0.5; font-weight:normal;">建议使用PC浏览器体验完整功能（请耐心使用，出BUG就多试试。我自己使用也会有BUG，但是重新进入就恢复正常了）</span>
+    <button id="fixedRefresh" title="立即刷新画布">⟳</button>
+    
+    <!-- 侧边导航栏 -->
+    <div class="side-nav">
+      <a href="#group-title" title="顶部">🏠</a>
+      <a href="#group-console" title="控制台">💻</a>
+      <a href="#group-basic" title="基本信息">📝</a>
+      <a href="#group-details" title="详情配置">⚙️</a>
+      <a href="#group-back" title="背面信息">📄</a>
+      <a href="#group-visual" title="视觉样式">🎨</a>
+      <a href="#group-barcode" title="条形码">📊</a>
+      <a href="#group-export" title="导出分享">💾</a>
+    </div>
+
     <div class="container2">
-      <div class="">
-        <h3>修改后或渲染出现BUG时请刷新</h3>
-        <button id="shuaXin">⟳ 刷新</button>
-        <button id="chongZhi">⚠ 重置</button>
+      <!-- 标题卡片 -->
+      <div id="group-title" class="editor-group" style="border-bottom: 4px solid var(--accent-color);">
+        <h2 style="margin:0;">通行认证自定义工具 <span style="font-size:0.6em; opacity:0.5; font-weight:normal;">- V3.1.1 -</span></h2>
+        <p style="font-size:0.75rem; opacity:0.7; margin: 10px 0 0 0; line-height: 1.5;">
+          建议使用PC浏览器体验完整功能。<br>
+          修改配置后，请点击下方按钮或右下角刷新图标。
+        </p>
+      </div>
+      <!-- 控制台组 -->
+      <div id="group-console" class="editor-group" style="border: 2px solid var(--accent-color);">
+        <h3>控制台</h3>
+        <div style="background: rgba(229, 77, 66, 0.1); border: 1px solid var(--danger-color); padding: 12px; border-radius: 12px; margin-bottom: 15px;">
+          <p style="font-size: 0.9rem; color: var(--danger-color); margin: 0; font-weight: bold; text-align: center;">
+            ⚠ 自动刷新已禁用
+          </p>
+          <p style="font-size: 0.8rem; color: var(--text-main); margin: 5px 0 0 0; text-align: center; line-height: 1.4;">
+            修改配置后，请务必点击下方按钮<br>手动刷新画布以查看更改
+          </p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button id="shuaXin" style="flex: 1; margin-top: 0; font-size: 1.1rem; height: 50px; background: var(--accent-color); color: white;">⟳ 立即刷新画布</button>
+          <button id="chongZhi" style="flex: 1; margin-top: 0;">⚠ 重置</button>
+        </div>
+      </div>
+
+      <!-- 基本信息组 -->
+      <div id="group-basic" class="editor-group">
         <h3>基本信息</h3>
         <label for="left_title">主标题</label>
         <input id="left_title" type="text" placeholder="例如：罗德岛">
@@ -37,7 +72,10 @@
 
         <label for="staff">STAFF</label>
         <input id="staff" type="text">
+      </div>
 
+      <!-- 详情配置组 -->
+      <div id="group-details" class="editor-group">
         <h3>详情配置</h3>
         <label for="xz1">下方小字 1</label>
         <input id="xz1" type="text">
@@ -57,7 +95,7 @@
         <input id="factionUpload" type="file" accept="image/*" style="display:none;">
 
         <label for="imageUpload" style="cursor: pointer; margin-top:20px;">
-          <div style="background:var(--input-bg); border:1px dashed #666; padding:15px; text-align:center; border-radius:4px; color: var(--accent-color);">
+          <div style="background:var(--input-bg); border:1px dashed #666; padding:15px; text-align:center; border-radius:1rem; color: var(--accent-color);">
             📂 点击上传角色图片
           </div>
         </label>
@@ -70,53 +108,56 @@
           <span>开启文本样式与位置（高级）</span>
         </label>
 
-        <div id="advancedPanel" style="display:none;">
-          <h3>文本样式与位置（高级）</h3>
+        <div id="advancedPanel" style="display:none; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #444;">
+          <h3 style="border-left: none; padding-left: 0; color: #fff; font-size: 0.9rem;">文本样式与位置（高级）</h3>
           <label for="fieldSelect">选择文本字段</label>
           <select id="fieldSelect"></select>
 
-        <label class="checkbox-container" style="display:flex; align-items:center; gap:10px; margin-top:8px;">
-          <input id="mergeFrontBackToggle" class="custom-checkbox" type="checkbox">
-          <span class="checkmark"></span>
-          <span>合并正/背面选择（启用后同 id 字段同时编辑）</span>
-        </label>
+          <label class="checkbox-container" style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+            <input id="mergeFrontBackToggle" class="custom-checkbox" type="checkbox">
+            <span class="checkmark"></span>
+            <span>合并正/背面选择</span>
+          </label>
 
-        <label for="fieldText">文本内容（实时编辑）</label>
-        <input id="fieldText" type="text">
+          <label for="fieldText">文本内容（实时编辑）</label>
+          <input id="fieldText" type="text">
 
-        <label for="posLeft">位置 - 左 (left)</label>
-        <input id="posLeft" type="number" step="1">
-        <label for="posTop">位置 - 顶 (top)</label>
-        <input id="posTop" type="number" step="1">
-        <label for="posRotate">旋转 (degrees)</label>
-        <input id="posRotate" type="number" step="1">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+              <label for="posLeft">位置 - 左</label>
+              <input id="posLeft" type="number" step="1">
+            </div>
+            <div>
+              <label for="posTop">位置 - 顶</label>
+              <input id="posTop" type="number" step="1">
+            </div>
+          </div>
+          <label for="posRotate">旋转 (degrees)</label>
+          <input id="posRotate" type="number" step="1">
 
-        <label for="fontSelect">选择字体</label>
-        <select id="fontSelect"></select>
+          <label for="fontSelect">选择字体</label>
+          <select id="fontSelect"></select>
 
-        <label for="fontStyleSelect">字重 / 风格</label>
-        <select id="fontStyleSelect"></select>
+          <label for="fontStyleSelect">字重 / 风格</label>
+          <select id="fontStyleSelect"></select>
 
-        <label for="fontSize">字号 (pt)</label>
-        <input id="fontSize" type="number" step="0.1">
+          <label for="fontSize">字号 (pt)</label>
+          <input id="fontSize" type="number" step="0.1">
 
-        <label for="fontColor">颜色</label>
-        <input id="fontColor" type="color" value="#ffffff">
+          <label for="fontColor">颜色</label>
+          <input id="fontColor" type="color" value="#ffffff">
 
-        <label for="fontTracking">字间距 (tracking)</label>
-        <input id="fontTracking" type="number" step="1">
+          <label for="fontTracking">字间距</label>
+          <input id="fontTracking" type="number" step="1">
 
-        <label for="fontUpload">上传自定义字体 (TTF / OTF)</label>
-        <input id="fontUpload" type="file" accept=".ttf,.otf">
-        <button id="applyStyle">应用样式</button>
+          <label for="fontUpload">上传自定义字体</label>
+          <input id="fontUpload" type="file" accept=".ttf,.otf">
+          <button id="applyStyle">应用样式</button>
         </div>
-
-
-
-
       </div>
 
-      <div>
+      <!-- 背面信息组 -->
+      <div id="group-back" class="editor-group">
         <h3>背面信息</h3>
         <label for="xzb1">背面小字 1</label>
         <input id="xzb1" type="text">
@@ -126,114 +167,69 @@
         <input id="xzb3" type="text">
         <label for="xzb4">左侧标识</label>
         <input id="xzb4" type="text">
+      </div>
 
+      <!-- 视觉样式组 -->
+      <div id="group-visual" class="editor-group">
         <h3>视觉样式</h3>
-        <label>渐变色开关</label>
-        <div class="cyber-toggle-wrapper">
-          <input id="toggleJianBian" class="cyber-toggle-checkbox" type="checkbox" checked>
-          <div class="cyber-toggle" aria-hidden="true">
-            <div class="cyber-toggle-track">
-              <div class="cyber-toggle-track-glow"></div>
-              <div class="cyber-toggle-track-dots">
-                <span class="cyber-toggle-track-dot"></span>
-                <span class="cyber-toggle-track-dot"></span>
-                <span class="cyber-toggle-track-dot"></span>
-              </div>
-              <div class="cyber-toggle-thumb">
-                <div class="cyber-toggle-thumb-shadow"></div>
-                <div class="cyber-toggle-thumb-highlight"></div>
-                <div class="cyber-toggle-thumb-icon">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6"></circle></svg>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div>
+            <label>渐变色开关</label>
+            <div class="cyber-toggle-wrapper">
+              <input id="toggleJianBian" class="cyber-toggle-checkbox" type="checkbox" checked>
+              <div class="cyber-toggle" aria-hidden="true">
+                <div class="cyber-toggle-track">
+                  <div class="cyber-toggle-track-glow"></div>
+                  <div class="cyber-toggle-track-dots"><span class="cyber-toggle-track-dot"></span><span class="cyber-toggle-track-dot"></span><span class="cyber-toggle-track-dot"></span></div>
+                  <div class="cyber-toggle-thumb"><div class="cyber-toggle-thumb-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"></circle></svg></div></div>
                 </div>
               </div>
-              <div class="cyber-toggle-particles">
-                <span class="cyber-toggle-particle"></span>
-                <span class="cyber-toggle-particle"></span>
-                <span class="cyber-toggle-particle"></span>
-                <span class="cyber-toggle-particle"></span>
-              </div>
             </div>
+            <label for="jian_bian">渐变色</label>
+            <input id="jian_bian" type="color" value="#00bfff">
           </div>
-          <div class="cyber-toggle-labels">
-            <span class="cyber-toggle-label-off">隐藏</span>
-            <span class="cyber-toggle-label-on">显示</span>
-          </div>
-        </div>
-        <label for="jian_bian">渐变色选择</label>
-        <input id="jian_bian" type="color" value="#00bfff">
 
-        <label>挡板开关</label>
-        <div class="cyber-toggle-wrapper">
-          <input id="toggleDangBan" class="cyber-toggle-checkbox" type="checkbox" checked>
-          <div class="cyber-toggle" aria-hidden="true">
-            <div class="cyber-toggle-track">
-              <div class="cyber-toggle-track-glow"></div>
-              <div class="cyber-toggle-track-dots">
-                <span class="cyber-toggle-track-dot"></span>
-                <span class="cyber-toggle-track-dot"></span>
-                <span class="cyber-toggle-track-dot"></span>
-              </div>
-              <div class="cyber-toggle-thumb">
-                <div class="cyber-toggle-thumb-shadow"></div>
-                <div class="cyber-toggle-thumb-highlight"></div>
-                <div class="cyber-toggle-thumb-icon">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6"></circle></svg>
+          <div>
+            <label>挡板开关</label>
+            <div class="cyber-toggle-wrapper">
+              <input id="toggleDangBan" class="cyber-toggle-checkbox" type="checkbox" checked>
+              <div class="cyber-toggle" aria-hidden="true">
+                <div class="cyber-toggle-track">
+                  <div class="cyber-toggle-track-glow"></div>
+                  <div class="cyber-toggle-track-dots"><span class="cyber-toggle-track-dot"></span><span class="cyber-toggle-track-dot"></span><span class="cyber-toggle-track-dot"></span></div>
+                  <div class="cyber-toggle-thumb"><div class="cyber-toggle-thumb-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"></circle></svg></div></div>
                 </div>
               </div>
-              <div class="cyber-toggle-particles">
-                <span class="cyber-toggle-particle"></span>
-                <span class="cyber-toggle-particle"></span>
-                <span class="cyber-toggle-particle"></span>
-                <span class="cyber-toggle-particle"></span>
-              </div>
             </div>
-          </div>
-          <div class="cyber-toggle-labels">
-            <span class="cyber-toggle-label-off">隐藏</span>
-            <span class="cyber-toggle-label-on">显示</span>
+            <label for="dang_ban">挡板颜色</label>
+            <input id="dang_ban" type="color" value="#8a60ab">
           </div>
         </div>
-        <label for="dang_ban">精一挡板颜色</label>
-        <input id="dang_ban" type="color" value="#8a60ab">
 
         <label for="bei_ying">角色背影颜色</label>
         <input id="bei_ying" type="color" value="#fff1b9">
 
-        <label>Logo 开关</label>
-        <div class="cyber-toggle-wrapper">
-          <input id="toggleLogo" class="cyber-toggle-checkbox" type="checkbox" checked>
-          <div class="cyber-toggle" aria-hidden="true">
-            <div class="cyber-toggle-track">
-              <div class="cyber-toggle-track-glow"></div>
-              <div class="cyber-toggle-track-dots">
-                <span class="cyber-toggle-track-dot"></span>
-                <span class="cyber-toggle-track-dot"></span>
-                <span class="cyber-toggle-track-dot"></span>
-              </div>
-              <div class="cyber-toggle-thumb">
-                <div class="cyber-toggle-thumb-shadow"></div>
-                <div class="cyber-toggle-thumb-highlight"></div>
-                <div class="cyber-toggle-thumb-icon">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6"></circle></svg>
+        <div style="display: flex; align-items: flex-end; gap: 20px; margin-top: 15px;">
+          <div style="flex: 1;">
+            <label>Logo 开关</label>
+            <div class="cyber-toggle-wrapper">
+              <input id="toggleLogo" class="cyber-toggle-checkbox" type="checkbox" checked>
+              <div class="cyber-toggle" aria-hidden="true">
+                <div class="cyber-toggle-track">
+                  <div class="cyber-toggle-track-glow"></div>
+                  <div class="cyber-toggle-track-dots"><span class="cyber-toggle-track-dot"></span><span class="cyber-toggle-track-dot"></span><span class="cyber-toggle-track-dot"></span></div>
+                  <div class="cyber-toggle-thumb"><div class="cyber-toggle-thumb-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"></circle></svg></div></div>
                 </div>
-              </div>
-              <div class="cyber-toggle-particles">
-                <span class="cyber-toggle-particle"></span>
-                <span class="cyber-toggle-particle"></span>
-                <span class="cyber-toggle-particle"></span>
-                <span class="cyber-toggle-particle"></span>
               </div>
             </div>
           </div>
-          <div class="cyber-toggle-labels">
-            <span class="cyber-toggle-label-off">隐藏</span>
-            <span class="cyber-toggle-label-on">显示</span>
+          <div style="flex: 1; padding-bottom: 8px;">
+            <label for="logoUpload" style="margin-top:0; font-size: 0.85em; color: var(--accent-color); cursor: pointer; text-decoration: underline;">
+              📂 上传自定义 Logo
+            </label>
+            <input id="logoUpload" type="file" accept="image/*" style="display:none;" onchange="if(this.files[0]) alert('Logo 已加载: ' + this.files[0].name)">
           </div>
         </div>
-        <label for="logoUpload" style="margin-top:4px; font-size: 0.85em; color: #888; cursor: pointer; display: inline-block; text-decoration: underline;">
-           ↪ 上传自定义 Logo
-        </label>
-        <input id="logoUpload" type="file" accept="image/*" style="display:none;" onchange="if(this.files[0]) alert('Logo 已加载: ' + this.files[0].name)">
 
         <label>切割线开关</label>
         <div class="cyber-toggle-wrapper">
@@ -241,76 +237,82 @@
           <div class="cyber-toggle" aria-hidden="true">
             <div class="cyber-toggle-track">
               <div class="cyber-toggle-track-glow"></div>
-              <div class="cyber-toggle-track-dots">
-                <span class="cyber-toggle-track-dot"></span>
-                <span class="cyber-toggle-track-dot"></span>
-                <span class="cyber-toggle-track-dot"></span>
-              </div>
-              <div class="cyber-toggle-thumb">
-                <div class="cyber-toggle-thumb-shadow"></div>
-                <div class="cyber-toggle-thumb-highlight"></div>
-                <div class="cyber-toggle-thumb-icon">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6"></circle></svg>
-                </div>
-              </div>
-              <div class="cyber-toggle-particles">
-                <span class="cyber-toggle-particle"></span>
-                <span class="cyber-toggle-particle"></span>
-                <span class="cyber-toggle-particle"></span>
-                <span class="cyber-toggle-particle"></span>
-              </div>
+              <div class="cyber-toggle-track-dots"><span class="cyber-toggle-track-dot"></span><span class="cyber-toggle-track-dot"></span><span class="cyber-toggle-track-dot"></span></div>
+              <div class="cyber-toggle-thumb"><div class="cyber-toggle-thumb-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"></circle></svg></div></div>
             </div>
           </div>
-          <div class="cyber-toggle-labels">
-            <span class="cyber-toggle-label-off">隐藏</span>
-            <span class="cyber-toggle-label-on">显示</span>
+        </div>
+      </div>
+
+      <!-- 条形码组 -->
+      <div id="group-barcode" class="editor-group">
+        <h3>条形码</h3>
+        <label for="barcodeData">条形码内容</label>
+        <input id="barcodeData" type="text" placeholder="在此输入内容" value="LingBailing">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+          <div>
+            <label for="barcodeWidth">宽度 (px)</label>
+            <input id="barcodeWidth" type="number" value="700">
+          </div>
+          <div>
+            <label for="barcodeHeight">高度 (px)</label>
+            <input id="barcodeHeight" type="number" value="80">
+          </div>
+          <div>
+            <label for="barcodePosX">位置 X</label>
+            <input id="barcodePosX" type="number" value="0">
+          </div>
+          <div>
+            <label for="barcodePosY">位置 Y</label>
+            <input id="barcodePosY" type="number" value="700">
           </div>
         </div>
         
-        <h3>条形码（自定义）</h3>
-        <label for="barcodeData">内容</label>
-        <input id="barcodeData" type="text" placeholder="在此输入条形码内容" value="LingBailing">
-        <div class="barcode-group">
-          <label for="barcodeWidth">宽度（条形码像素宽度）</label>
-          <input id="barcodeWidth" type="number" value="700">
-          <label for="barcodeHeight">高度（条形码像素高度）</label>
-          <input id="barcodeHeight" type="number" value="80">
-          <label for="barcodePosX">正面位置 X</label>
-          <input id="barcodePosX" type="number" value="0">
-          <label for="barcodePosY">正面位置 Y</label>
-          <input id="barcodePosY" type="number" value="700">
-          <div class="help-text">说明：宽度/高度为生成的条形码像素尺寸。位置 X/Y 为条形码在正面画布上的位置（背面会同步偏移）。</div>
-        </div>
         <label for="barcodeBarWidth">条宽 (px)</label>
         <input id="barcodeBarWidth" type="number" value="3.5" step="0.1">
         <label for="barcodeBarColor">条颜色</label>
         <input id="barcodeBarColor" type="color" value="#000000">
-        <label style="display:flex;align-items:center;gap:8px;"><input id="barcodeTransparent" type="checkbox"> 透明条形码（使 frame 区域穿透）</label>
-        <button id="createBarcode">生成条形码</button>
-        <button id="removeBarcode">移除条形码</button>
+        
+        <label class="checkbox-container" style="margin-top: 15px;">
+          <input id="barcodeTransparent" class="custom-checkbox" type="checkbox">
+          <span class="checkmark"></span>
+          <span>透明背景</span>
+        </label>
+        
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+          <button id="createBarcode" style="flex: 1; margin-top: 0;">生成</button>
+          <button id="removeBarcode" style="flex: 1; margin-top: 0; background: none; border: 1px solid #444; color: white;">移除</button>
         </div>
+      </div>
 
-        <h3>导出</h3>
+      <!-- 导出组 -->
+      <div id="group-export" class="editor-group">
+        <h3>导出与分享</h3>
         <div class="export-group">
           <div class="export-row">
-            <button id="exportPNG1">↓ 导出正面 .PNG</button>
-            <button id="exportPNG2">↓ 导出背面 .PNG</button>
+            <button id="exportPNG1">↓ 导出正面</button>
+            <button id="exportPNG2">↓ 导出背面</button>
           </div>
-          <div class="export-row">
-            <button id="exportBothPNG">↓ 导出双面（并排）.PNG</button>
-            <button id="exportBothZip">↓ 导出双面.zip</button>
-          </div>
-          <div class="export-row">
-            <button id="exportShare">↓ 导出分享文件 (.json)</button>
-            <label class="import-label">
-              <input id="importShare" type="file" accept="application/json">
-              <span>加载分享文件</span>
+          <button id="exportBothPNG" style="background: var(--accent-color); color: white;">↓ 导出双面并排</button>
+          <button id="exportBothZip">↓ 导出双面压缩包 (.zip)</button>
+          
+          <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #333;">
+            <button id="exportShare" style="background: none; border: 1px solid #444; color: var(--text-sub);">↓ 导出工程文件 (.json)</button>
+            <label class="import-label" style="display: block; margin-top: 10px; text-align: center;">
+              <span style="font-size: 0.85em; color: var(--accent-color); cursor: pointer; text-decoration: underline;">📂 加载工程文件</span>
+              <input id="importShare" type="file" accept="application/json" style="display:none;">
             </label>
           </div>
         </div>
+      </div>
 
-        <button id="lianXi" style="margin-top:20px">✉ 联系作者</button>
-        <button id="github" style="margin-top:20px">GitHub</button>
+      <!-- 页脚组 -->
+      <div class="editor-group" style="background: none; border: none; box-shadow: none; padding: 0;">
+        <div style="display: flex; gap: 10px;">
+          <button id="lianXi" style="flex: 1;">✉ 联系作者</button>
+          <button id="github" style="flex: 1;">GitHub</button>
+        </div>
       </div>
     </div>
   </div>

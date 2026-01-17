@@ -18,6 +18,15 @@ document.getElementById("shuaXin").onclick = () => {
   readTemplate(back, "ctx02");
 };
 
+// 修复右下角固定刷新按钮
+const fixedRefresh = document.getElementById("fixedRefresh");
+if (fixedRefresh) {
+  fixedRefresh.onclick = () => {
+    readTemplate(template, "ctx01");
+    readTemplate(back, "ctx02");
+  };
+}
+
 /**
  * 重置按钮点击事件
  * 重新加载整个页面,恢复到初始状态

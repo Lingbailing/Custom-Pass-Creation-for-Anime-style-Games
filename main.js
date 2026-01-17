@@ -27,7 +27,7 @@ import "./js/console/main.js";
  */
 document.getElementById("lianXi").onclick = () => {
   alert(
-    "- 原作者 QQ 3412725994 -\n" +
+    "- 原作者 QQ 3412735994 -\n" +
     "- 原作者交流群 1056969651 -\n" +
     "- 修改作者: 你联系个蛋呀，我不会呀 -\n" +
     "- 如有侵权请联系删除 -"

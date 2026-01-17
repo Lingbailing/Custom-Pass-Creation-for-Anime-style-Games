@@ -11,16 +11,10 @@ imageUpload.addEventListener("change", (e) => {
   if (!file) return;
   const url = URL.createObjectURL(file);
   replaceImage("assets/layers/tuPian.png", url);
-  setTimeout(() => {
-    readTemplate(template, "ctx01");
-    readTemplate(back, "ctx02");
-  }, 200);
 });
 export const runtimeImageMap = {}; // 运行时图片映射表
 function replaceImage(originalSrc, newSrc) {
   runtimeImageMap[originalSrc] = newSrc;
-  readTemplate(template, "ctx01");
-  readTemplate(back, "ctx02");
 }
 // 人物移动
 export const runtimeLayerState = {
@@ -51,7 +45,6 @@ seProfession.addEventListener("change", function () {
   template.layers[0].children[2].visible = seValue !== "null";
   for (let i = 0; i < template.layers[0].children[2].children.length; i++)
     template.layers[0].children[2].children[i].visible = seValue === template.layers[0].children[2].children[i].id;
-  readTemplate(template, "ctx01");
   // show upload control when custom selected
   const profLabel = document.getElementById('professionUploadLabel');
   const profInput = document.getElementById('professionUpload');
@@ -84,7 +77,6 @@ seFaction.addEventListener("change", function () {
   template.layers[1].children[0].visible = seValue !== "null";
   for (let i = 0; i < template.layers[1].children[0].children.length; i++)
     template.layers[1].children[0].children[i].visible = seValue === template.layers[1].children[0].children[i].id;
-  readTemplate(template, "ctx01");
   // show upload control when custom selected
   const facLabel = document.getElementById('factionUploadLabel');
   const facInput = document.getElementById('factionUpload');
@@ -124,7 +116,6 @@ if (professionUpload) {
       group.children[i].visible = group.children[i].id === 'custom_profession';
     }
     template.layers[0].children[2].visible = true;
-    readTemplate(template, 'ctx01');
   });
 }
 
@@ -155,7 +146,6 @@ if (factionUpload) {
       group.children[i].visible = group.children[i].id === 'custom_faction';
     }
     template.layers[1].children[0].visible = true;
-    readTemplate(template, 'ctx01');
   });
 }
 // 是否显示明日方舟 Logo（切换为单 checkbox）
@@ -174,7 +164,6 @@ if (logoToggle) {
       const mrfz = deco.children.find(ch => ch.id === 'mrfz_logo');
       if (mrfz) mrfz.visible = logoToggle.checked;
     }
-    readTemplate(template, 'ctx01');
   });
 }
 
@@ -205,7 +194,6 @@ if (cutToggle) {
 
   cutToggle.addEventListener('change', () => {
     template.layers[0].children[0].visible = cutToggle.checked;
-    readTemplate(template, 'ctx01');
   });
 }
 
@@ -290,6 +278,7 @@ function createMaskFromBarcodeCanvas(barcodeCanvas, threshold = 128) {
 async function punchHolesInFrame(frameSrc, maskCanvas, x = 0, y = 700) {
   return new Promise((resolve) => {
     const img = new Image();
+    img.crossOrigin = "anonymous";
     img.onload = () => {
       const c = document.createElement('canvas');
       c.width = img.width; c.height = img.height;
@@ -347,7 +336,7 @@ function insertBarcodeIntoTemplate(dataUrl, width, height, x, y) {
   }
 }
 
-createBarcodeBtn && createBarcodeBtn.addEventListener('click', async () => {
+async function updateBarcode() {
   const text = barcodeDataInput.value || '';
   const width = Number(barcodeWidthInput.value) || 590;
   const height = Number(barcodeHeightInput.value) || 80;
@@ -362,7 +351,6 @@ createBarcodeBtn && createBarcodeBtn.addEventListener('click', async () => {
     // create mask from barcode (bars opaque)
     const mask = createMaskFromBarcodeCanvas(rotated);
     // frame sources in template/back
-    // front frame is inside group_decorative_patterns
     const decoGroup = template.layers[0].children.find(c=>c.id==='group_decorative_patterns');
     const frontFrameSrc = decoGroup && decoGroup.children ? decoGroup.children.find(ch=>ch.id==='frame')?.src : null;
     const backFrameSrc = back.layers.find(l=>l.id==='frame')?.src;
@@ -378,34 +366,34 @@ createBarcodeBtn && createBarcodeBtn.addEventListener('click', async () => {
       const dataUrlB = await punchHolesInFrame(backFrameSrc, mask, 590 - height - posX, posY);
       if (dataUrlB) runtimeImageMap[backFrameSrc] = dataUrlB;
     }
-    // remove any overlay barcode images (we rely on punched frames)
+    // remove any overlay barcode images
     const group = template.layers[0].children.find(c => c.id === 'group_decorative_patterns');
     if (group) {
       for (let i = group.children.length - 1; i >= 0; i--) {
         if (group.children[i].id === 'barcode_custom') group.children.splice(i, 1);
       }
     }
-    // also remove any back overlay barcode image that might block the punched frame
     if (back && back.layers) {
       for (let i = back.layers.length - 1; i >= 0; i--) {
         if (back.layers[i].id === 'barcode_custom_back') back.layers.splice(i, 1);
       }
     }
-    // re-render
-    readTemplate(template, 'ctx01');
-    readTemplate(back, 'ctx02');
-    return;
+  } else {
+    // non-transparent: produce colored barcode and insert as image; also restore any modified frames
+    const dataUrl = canvasToDataURL(rotated);
+    // restore frames if we previously modified them
+    Object.keys(originalFrameMap).forEach(k => { if (runtimeImageMap[k]) delete runtimeImageMap[k]; });
+    insertBarcodeIntoTemplate(dataUrl, width, height, posX, posY);
   }
+  // 自动刷新画布
+  readTemplate(template, "ctx01");
+  readTemplate(back, "ctx02");
+}
 
-  // non-transparent: produce colored barcode and insert as image; also restore any modified frames
-  const dataUrl = canvasToDataURL(rotated);
-  // restore frames if we previously modified them
-  Object.keys(originalFrameMap).forEach(k => { if (runtimeImageMap[k]) delete runtimeImageMap[k]; });
-  insertBarcodeIntoTemplate(dataUrl, width, height, posX, posY);
-  setTimeout(() => {
-    readTemplate(template, 'ctx01');
-    readTemplate(back, 'ctx02');
-  }, 50);
+createBarcodeBtn && createBarcodeBtn.addEventListener('click', updateBarcode);
+[barcodeDataInput, barcodeWidthInput, barcodeHeightInput, barcodePosXInput, barcodePosYInput, barcodeBarWidthInput, barcodeBarColorInput, barcodeTransparentCheckbox].forEach(el => {
+  if (el) el.addEventListener('input', updateBarcode);
+  if (el && el.type === 'checkbox') el.addEventListener('change', updateBarcode);
 });
 
 removeBarcodeBtn && removeBarcodeBtn.addEventListener('click', () => {
@@ -430,6 +418,7 @@ removeBarcodeBtn && removeBarcodeBtn.addEventListener('click', () => {
   // clear originalFrameMap entries
   if (frontFrameSrc && (frontFrameSrc in originalFrameMap)) delete originalFrameMap[frontFrameSrc];
   if (backFrameSrc && (backFrameSrc in originalFrameMap)) delete originalFrameMap[backFrameSrc];
-  readTemplate(template, 'ctx01');
-  readTemplate(back, 'ctx02');
+  // 自动刷新画布
+  readTemplate(template, "ctx01");
+  readTemplate(back, "ctx02");
 });
